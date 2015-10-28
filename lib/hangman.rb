@@ -1,62 +1,70 @@
+class Hangman
 
+	def initialize
 		@all_words = File.readlines "5desk.txt"
 		@words = []
+		@secret_word = ""
+		@guess_word = []
 		@guess = 0
-		@chances = 10
-		@playing = true
-		@hanged = false
 		@guessed_letters = []
-		@letter = ""
-	
+		@chances = 10
 
-	#def hanged
-	#	if @guess == @chances
-	#		@playing = false
-	#		@hanged = true
-	#	end
-	#end	
+	end
 
-	#def guess
-		#while @playing
-
-	#end
+	def get_words
+		@all_words.each do |word|
+			if word.length > 5 && word.length < 13
+				@words << word
+			end
+		end
+	end
 
 	def get_guess
-		@guess += 1
 		puts "Guess a letter."
 		puts "You have already guessed #{@guessed_letters}"
 		@letter = gets.chomp.downcase
 		@guessed_letters << @letter
 	end
 
-	#get all the suitable words from 5desk and push them to words[]
-	def get_words
-		@all_words.each do |word|
-			if word.length > 5 && word.length < 13
-				@words.push word
-			end
-		end
+	def get_secret_word
+		@secret_word = @words[rand(1..48891)]
 	end
 
-	#
+	def	create_guess
+		@guess_length = @secret_word.length-1
+		@guess_length.times {@guess_word << "_"}
 
-	#run get_words
-	get_words
-	#get the word to be guessed from @words[]
-	@secret_word = @words[rand(1..48891)]
+	end
 
-	#create empty array to store the users guesses
-	@guess_word = []
+	def check_guess
+		@secret_letters = @secret_word.split("")
+		if @secret_letters.include?(@letter)
+			@secret_letters.each_with_index do |letter, index|
+				if letter == @letter
+					@guess_word[index] = @letter
+				end
+			end
+		else
+			@chances -= 1
+			puts "I'm sorry, that letter is not in the secret word."
+			puts "You have #{@chances} guesses left."
+		end
+		
+	end
 
-	#get the actual length of the word being guessed
-	@guess_length = @secret_word.length-1
+	def test_functions
+		get_words
+		get_secret_word
+		puts @secret_word
+		create_guess
+		puts @guess_word.join(" ")
+		get_guess
+		check_guess
+		puts @guess_word.join(" ")
+	end
 
-	#initialize @guess_word[] with undescores
-	@guess_length.times {@guess_word << "_"}
 
+end
 
-	
-	get_guess
-	puts @secret_word.length
-	puts @secret_word
-	puts @guess_word.join(" ")
+test = Hangman.new
+test.test_functions
