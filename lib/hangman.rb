@@ -4,14 +4,13 @@ class Hangman
 		@all_words = File.readlines "5desk.txt"
 		@words = []
 		@secret_word = ""
-		@guess_string = ""
 		@guess_word = []
 		@guess = 0
 		@guessed_letters = []
 		@chances = 10
 		@playing = true
 		@hanged = false
-
+		@win = false
 	end
 
 	def game_loop
@@ -26,13 +25,20 @@ class Hangman
 	end
 					
 	def game_check
-		@guess_string = @guess_word.join
+		win_check
 		if @chances == 0
 			@playing = false
 			@hanged = true
-		elsif @guess_string== @secret_word
-			@playing = false
 		end
+	end
+
+	def all_letters(word)
+		word[/[a-zA-Z]+/] == word
+	end
+
+	def win_check
+		word = @guess_word.join("")
+		all_letters(word) ? @playing = false : @playing = true
 	end
 
 	def game_over
