@@ -37,7 +37,6 @@ class Hangman
 			get_guess
 			check_guess
 			display_guess
-			puts @secret_word
 			game_check
 			game_over	
 		end
