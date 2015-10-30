@@ -1,20 +1,39 @@
-class Hangman
+require "yaml"
+
+class Dictionary
 
 	def initialize
 		@all_words = File.readlines "5desk.txt"
 		@words = []
+	end
+
+	def get_words
+		@all_words.each do |word|
+			if word.length > 5 && word.length < 13
+				@words << word
+			end
+		end
+	end
+
+end
+
+class Hangman
+
+	def initialize
+		@words = Dictionary.new.get_words
 		@secret_word = ""
 		@guess_word = []
-		@guess = 0
 		@guessed_letters = []
 		@chances = 10
 		@playing = true
 		@hanged = false
 		@win = false
+		@saves = 0
 	end
 
 	def game_loop
 		while @playing
+			save_or_load
 			get_guess
 			check_guess
 			display_guess
@@ -53,10 +72,13 @@ class Hangman
 	
 	def lose_message
 		puts "You have been hanged."
+		puts "The correct word was #{@secret_word}"
 		puts "Play again(y/n)"
 		if gets.chomp == "y"
 			game = Hangman.new
 			game.play
+		else
+			puts "Thanks for playing"
 		end
 
 	end
@@ -67,14 +89,8 @@ class Hangman
 		if gets.chomp == "y"
 			game = Hangman.new
 			game.play
-		end
-	end
-
-	def get_words
-		@all_words.each do |word|
-			if word.length > 5 && word.length < 13
-				@words << word
-			end
+		else
+			puts "Thanks for playing."
 		end
 	end
 
@@ -119,14 +135,66 @@ class Hangman
 
 	end
 
-	def play
-		get_words
-		get_secret_word
-		puts @secret_word
-		create_guess
-		display_guess
-		game_loop
+	def save_game
+		Dir.mkdir("save") unless Dir.exists?("save")
+		save_file = File.new("save/hangman_#{@saves}.yaml", "w")
+		save_file.write(YAML.dump([@secret_word, @guess_word, @guessed_letters, @chances]))
+		@saves += 1
+		save_file.close
+	end
 
+	def load_game(number)
+		file = File.new("save/hangman_#{number}.yaml", "r")
+		save_file = file.read
+		file.close
+		File.delete("save/hangman_#{number}.yaml")
+
+		data = YAML::load(save_file)
+
+		@secret_word = data[0]
+		@guess_word = data[1]
+		@guessed_letters = data[2]
+		@chances = data[3]
+	end
+
+	def start
+		choice = ""
+		puts "Would you like to start a new game or load a previous save?(new/load)"
+		choice = gets.chomp.downcase
+		if choice == "load"
+			puts "Which save would you like to restore?"
+			puts Dir.new("save").entries
+			number = gets.chomp.to_i
+			load_game(number)
+		else
+			get_secret_word
+			create_guess
+			display_guess
+		end
+	end
+
+	def save_or_load
+		choice = ""
+		puts "Would you like to save the current game or load a previous save?(y/n)"
+		choice = gets.chomp.downcase
+		if choice == "y"
+			puts "Save or load?"
+			choice = gets.chomp.downcase
+
+			if choice == "save"
+				save_game
+				puts "Game saved"
+			else
+				puts "Which save would you like to restore?"
+				puts Dir.new("save").entries
+				number = gets.chomp.to_i
+				load_game(number)
+			end
+		end
+	end
+	def play
+		start
+		game_loop
 	end
 
 
